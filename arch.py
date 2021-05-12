@@ -20,7 +20,7 @@ from detectron2.structures import Boxes, ImageList, Instances
 
 from lp_modules import LP_Modules
 @META_ARCH_REGISTRY.register()
-class GeneralizedRCNN(nn.Module):
+class AdaptiveLP_Detector(nn.Module):
     """
     Generalized R-CNN. Any models that contains the following three components:
     1. Per-image feature extraction (aka backbone)
@@ -210,7 +210,7 @@ class GeneralizedRCNN(nn.Module):
 
         if do_postprocess:
             assert not torch.jit.is_scripting(), "Scripting is not supported for postprocess."
-            return GeneralizedRCNN._postprocess(results, batched_inputs, images.image_sizes)
+            return AdaptiveLP_Detector._postprocess(results, batched_inputs, images.image_sizes)
         else:
             return results
 
