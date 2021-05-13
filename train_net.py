@@ -14,7 +14,7 @@ from detectron2.utils.file_io import PathManager
 from detectron2.utils.logger import setup_logger
 from detectron2 import model_zoo
 
-from configs.add_adaptivelp_config import add_adaptivelp_config
+from AdaptiveLPDetection.config.add_adaptivelp_config import add_adaptivelp_config
 from AdaptiveLPDetection.engine.trainer import Trainer
 
 def setup(args):
@@ -24,8 +24,8 @@ def setup(args):
     cfg.merge_from_list(args.opts)
     cfg.freeze()
     default_setup(cfg, args)
-    # Setup logger for "densepose" module
-    setup_logger(output=cfg.OUTPUT_DIR, distributed_rank=comm.get_rank(), name="densepose")
+    # Setup logger for "adaptivelp" module
+    setup_logger(output=cfg.OUTPUT_DIR, distributed_rank=comm.get_rank(), name="adaptivelp")
     return cfg
 
 
@@ -36,25 +36,25 @@ def main(args):
     # PathManager.set_strict_kwargs_checking(False)
 
     # add dataset train and test here
-    cfg.DATASETS.TRAIN = ("processed_data",)
+    cfg.DATASETS.TRAIN = ("kittidata_train",)
     cfg.DATASETS.TEST = ()
     cfg.DATALOADER.NUM_WORKERS = 2
 
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = 9
-    cfg.MODEL.ADAPTIVE_LP.BACKBONE_WEIGHTS = model_zoo.get_checkpoint_url(
-        "COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
+    # cfg.MODEL.ADAPTIVE_LP.BACKBONE_WEIGHTS = model_zoo.get_checkpoint_url(
+    #     "COCO-Detection/faster_rcnn_R_101_FPN_3x.yaml")
     cfg.SOLVER.IMS_PER_BATCH = 2
     cfg.SOLVER.BASE_LR = 0.00025
     cfg.SOLVER.MAX_ITER = 300000
     cfg.SOLVER.STEPS = []
     cfg.MODEL.ROI_HEADS.BATCH_SIZE_PER_IMAGE = 128
     # change output saving checkpoint dir here
-    cfg.OUTPUT_DIR = "./output_far_2-8"
+    cfg.OUTPUT_DIR = "./output"
     os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
     trainer = Trainer(cfg)
-    if not os.listdir(cfg.OUTPUT_DIR):
-        #if the OUTPUT_DIR is empty will initialize the pretraining for backbone model
-        trainer.load_backbone_pretrained(trainer.model)
+    # if not os.listdir(cfg.OUTPUT_DIR):
+    #     #if the OUTPUT_DIR is empty will initialize the pretraining for backbone model
+    #     trainer.load_backbone_pretrained(trainer.model)
     trainer.resume_or_load(resume=args.resume)
     # if cfg.TEST.AUG.ENABLED:
     #     trainer.register_hooks(
